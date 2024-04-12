@@ -1,0 +1,7 @@
+name: ItemInHand
+version: '${project.version}'
+main: me.mattmcgoo.iteminhand.ItemInHand
+api-version: '1.20'
+authors: [Mattmcgoo]
+description: Plugin to show what item a player is holding in chat
+website: https://github.com/Mattmcgoo
