@@ -1,3 +1,5 @@
+//Plugin by: Mattmcgoo
+
 package me.mattmcgoo.iteminhand;
 
 import org.bukkit.plugin.java.JavaPlugin;
