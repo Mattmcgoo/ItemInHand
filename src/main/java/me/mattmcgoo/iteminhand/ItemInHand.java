@@ -9,6 +9,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+
+import java.util.List;
 
 public final class ItemInHand extends JavaPlugin implements Listener {
 
@@ -22,24 +28,45 @@ public final class ItemInHand extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        //Check if the message contains [i]
+        // Check if the message contains [i]
         if (message.contains("[i]")) {
             ItemStack heldItem = player.getInventory().getItemInMainHand();
             if (heldItem != null && heldItem.getType() != null) {
-                String itemName = heldItem.getItemMeta().getDisplayName();//Get item name for display
+                String itemName = heldItem.getItemMeta().getDisplayName();
                 if (itemName == null || itemName.isEmpty()) {
-                    itemName = heldItem.getType().toString();//Use item type if no custom name
+                    itemName = heldItem.getType().toString();
                 }
 
-                //Check if item name contains color codes
-                if (itemName.contains("&")) {
-                    itemName = ChatColor.translateAlternateColorCodes('&', itemName);
-                }
+                // Format item name with dark gray brackets and yellow color
+                itemName = ChatColor.YELLOW + "[" + ChatColor.DARK_GRAY + itemName + ChatColor.YELLOW + "]";
 
-                //Check if player has multiple of the item in their hand
+                // Format quantity in yellow
                 int quantity = heldItem.getAmount();
-                String displayMessage = message.replace("[i]", itemName + " x" + quantity);
+                String count = ChatColor.YELLOW + "x" + quantity;
+
+                // Prepare hover text with lore and enchantments
+                ItemMeta meta = heldItem.getItemMeta();
+                List<String> lore = meta.getLore();
+                StringBuilder hoverText = new StringBuilder();
+                if (lore != null && !lore.isEmpty()) {
+                    for (String loreLine : lore) {
+                        hoverText.append(loreLine).append("\n");
+                    }
+                }
+                // Add enchantments
+                meta.getEnchants().forEach((enchantment, level) -> {
+                    hoverText.append(ChatColor.BLUE).append(enchantment.getKey().getKey()).append(" ").append(level).append("\n");
+                });
+
+                // Replace [i] with formatted item name and quantity, and add hover event
+                String displayMessage = message.replace("[i]", itemName + " " + count);
                 event.setMessage(displayMessage);
+
+                TextComponent itemComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', displayMessage));
+                BaseComponent[] hoverComponents = new BaseComponent[]{new TextComponent(hoverText.toString())};
+                itemComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverComponents));
+
+                player.spigot().sendMessage(itemComponent);
             }
         }
     }
